@@ -127,6 +127,39 @@
             display: none;
         }
 
+        .menu-toggle {
+        display: none;
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        z-index: 9999; /* Increased z-index */
+        padding: 0.5rem 1rem;
+        background: #ffffff;
+        color: #000000;
+        border: 1px solid #000000;
+        cursor: pointer;
+        font-family: 'Times New Roman', serif;
+        font-size: 1rem;
+        min-width: 60px; /* Ensure minimum width */
+        height: 40px; /* Fixed height */
+        opacity: 1; /* Ensure full opacity */
+    }
+
+    @media (max-width: 768px) {
+        .menu-toggle {
+            display: block !important; /* Force display */
+            position: fixed;
+            background: #ffffff !important; /* Force background */
+            box-shadow: 0 0 10px rgba(0,0,0,0.1); /* Add subtle shadow for visibility */
+        }
+
+        .main-heading {
+            margin-top: 4rem; /* Increased top margin to avoid overlap with menu button */
+        }
+
+        /* Rest of the media query styles remain the same */
+    }
+
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
