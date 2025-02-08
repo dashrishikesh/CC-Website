@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Online Book Reader</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+    <title>Caitanya Caritamrta</title>
     <style>
         :root {
             --primary-color: #2563eb;
             --bg-color: #f8fafc;
             --text-color: #1e293b;
+            --sidebar-width: 250px;
         }
 
         body {
@@ -19,169 +19,272 @@
             background-color: var(--bg-color);
             color: var(--text-color);
             line-height: 1.6;
+            display: flex;
         }
 
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-
-        header {
+        .main-heading {
             text-align: center;
-            margin-bottom: 2rem;
-        }
-
-        h1 {
             color: var(--primary-color);
             font-size: 2.5rem;
-            margin-bottom: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--primary-color);
         }
 
-        .book-input {
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
             background: white;
             padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
         }
 
-        .file-input-wrapper {
+        .sidebar h2 {
+            color: var(--primary-color);
             margin-bottom: 1.5rem;
         }
 
-        #fileInput {
-            display: none;
+        .chapter-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
         }
 
-        .custom-file-upload {
-            display: inline-block;
-            padding: 0.75rem 1.5rem;
-            background-color: var(--primary-color);
-            color: white;
-            border-radius: 6px;
-            cursor: pointer;
+        .chapter-list li {
+            margin-bottom: 0.5rem;
+        }
+
+        .chapter-list a {
+            color: var(--text-color);
+            text-decoration: none;
+            display: block;
+            padding: 0.5rem;
+            border-radius: 4px;
             transition: background-color 0.2s;
         }
 
-        .custom-file-upload:hover {
-            background-color: #1d4ed8;
+        .chapter-list a:hover {
+            background-color: var(--bg-color);
+            color: var(--primary-color);
         }
 
-        #preview {
+        .chapter-list a.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            padding: 2rem;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .chapter-title {
+            color: var(--primary-color);
+            margin-bottom: 2rem;
+        }
+
+        .chapter-content {
             background: white;
             padding: 2rem;
             border-radius: 8px;
-            margin-top: 2rem;
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
         }
 
-        #preview img {
-            max-width: 100%;
-            height: auto;
-        }
-
-        .controls {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
+        .navigation-buttons {
             display: flex;
-            gap: 1rem;
+            justify-content: space-between;
+            margin-top: 2rem;
         }
 
-        .control-btn {
-            padding: 0.75rem;
-            border-radius: 50%;
-            background: var(--primary-color);
+        .nav-button {
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary-color);
             color: white;
             border: none;
+            border-radius: 6px;
             cursor: pointer;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-            transition: transform 0.2s;
+            text-decoration: none;
+            transition: background-color 0.2s;
         }
 
-        .control-btn:hover {
-            transform: translateY(-2px);
+        .nav-button:hover {
+            background-color: #1d4ed8;
+        }
+
+        .nav-button:disabled {
+            background-color: #94a3b8;
+            cursor: not-allowed;
         }
 
         @media (max-width: 768px) {
-            .container {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+                z-index: 1000;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
                 padding: 1rem;
             }
-            
-            h1 {
+
+            .menu-toggle {
+                position: fixed;
+                top: 1rem;
+                left: 1rem;
+                z-index: 1001;
+                padding: 0.5rem;
+                background: var(--primary-color);
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+
+            .main-heading {
                 font-size: 2rem;
+                margin-top: 3rem;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Online Book Reader</h1>
-            <p>Upload your book in Markdown format (.md) to start reading</p>
-        </header>
+    <button class="menu-toggle" id="menuToggle">☰</button>
+    
+    <nav class="sidebar" id="sidebar">
+        <h2>Chapters</h2>
+        <ul class="chapter-list" id="chapterList">
+            <!-- Chapters will be loaded here -->
+        </ul>
+    </nav>
 
-        <div class="book-input">
-            <div class="file-input-wrapper">
-                <label for="fileInput" class="custom-file-upload">
-                    Choose File
-                </label>
-                <input type="file" id="fileInput" accept=".md,.txt">
-            </div>
-            <div id="fileName"></div>
+    <main class="main-content">
+        <h1 class="main-heading">Caitanya Caritamrta</h1>
+        <h2 class="chapter-title" id="chapterTitle">Loading...</h2>
+        <div class="chapter-content" id="chapterContent">
+            <p>Loading chapter content...</p>
         </div>
-
-        <div id="preview"></div>
-
-        <div class="controls">
-            <button class="control-btn" id="decreaseFont">-</button>
-            <button class="control-btn" id="increaseFont">+</button>
+        <div class="navigation-buttons">
+            <a href="#" class="nav-button" id="prevButton">Previous Chapter</a>
+            <a href="#" class="nav-button" id="nextButton">Next Chapter</a>
         </div>
-    </div>
+    </main>
 
     <script>
-        const fileInput = document.getElementById('fileInput');
-        const preview = document.getElementById('preview');
-        const fileName = document.getElementById('fileName');
-        const increaseFont = document.getElementById('increaseFont');
-        const decreaseFont = document.getElementById('decreaseFont');
-        
-        let fontSize = 16;
+        // Configuration - update this with your chapters
+        const chapters = [
+            { id: 1, title: 'Chapter 1', file: 'chapter1.txt' },
+            { id: 2, title: 'Chapter 2', file: 'chapter2.txt' },
+            { id: 3, title: 'Chapter 3', file: 'chapter3.txt' },
+            // Add more chapters as needed
+        ];
 
-        fileInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+        let currentChapter = 1;
 
-            fileName.textContent = `Selected file: ${file.name}`;
+        // DOM Elements
+        const chapterList = document.getElementById('chapterList');
+        const chapterTitle = document.getElementById('chapterTitle');
+        const chapterContent = document.getElementById('chapterContent');
+        const prevButton = document.getElementById('prevButton');
+        const nextButton = document.getElementById('nextButton');
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const content = e.target.result;
-                // Convert markdown to HTML using marked library
-                const htmlContent = marked.parse(content);
-                preview.innerHTML = htmlContent;
-            };
-            reader.readAsText(file);
-        });
+        // Generate chapter list
+        function generateChapterList() {
+            chapterList.innerHTML = chapters.map(chapter => `
+                <li>
+                    <a href="#chapter${chapter.id}" 
+                       data-chapter="${chapter.id}" 
+                       ${currentChapter === chapter.id ? 'class="active"' : ''}>
+                        ${chapter.title}
+                    </a>
+                </li>
+            `).join('');
 
-        increaseFont.addEventListener('click', () => {
-            if (fontSize < 24) {
-                fontSize += 2;
-                preview.style.fontSize = `${fontSize}px`;
+            // Add click events to chapter links
+            document.querySelectorAll('.chapter-list a').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const chapterId = parseInt(link.dataset.chapter);
+                    loadChapter(chapterId);
+                });
+            });
+        }
+
+        // Load chapter content
+        async function loadChapter(chapterId) {
+            currentChapter = chapterId;
+            const chapter = chapters.find(c => c.id === chapterId);
+            
+            if (!chapter) return;
+
+            // Update URL without page reload
+            window.history.pushState({}, '', `#chapter${chapterId}`);
+            
+            // Update UI
+            chapterTitle.textContent = chapter.title;
+            chapterContent.innerHTML = '<p>Loading chapter content...</p>';
+            
+            try {
+                const response = await fetch(chapter.file);
+                if (!response.ok) throw new Error('Failed to load chapter');
+                const content = await response.text();
+                chapterContent.innerHTML = `<p>${content.replace(/\n/g, '</p><p>')}</p>`;
+            } catch (error) {
+                chapterContent.innerHTML = '<p>Error loading chapter content. Please try again.</p>';
+            }
+
+            // Update navigation buttons
+            prevButton.style.visibility = chapterId > 1 ? 'visible' : 'hidden';
+            nextButton.style.visibility = chapterId < chapters.length ? 'visible' : 'hidden';
+
+            // Update active chapter in sidebar
+            document.querySelectorAll('.chapter-list a').forEach(link => {
+                link.classList.toggle('active', parseInt(link.dataset.chapter) === chapterId);
+            });
+        }
+
+        // Navigation button events
+        prevButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (currentChapter > 1) {
+                loadChapter(currentChapter - 1);
             }
         });
 
-        decreaseFont.addEventListener('click', () => {
-            if (fontSize > 12) {
-                fontSize -= 2;
-                preview.style.fontSize = `${fontSize}px`;
+        nextButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (currentChapter < chapters.length) {
+                loadChapter(currentChapter + 1);
             }
         });
+
+        // Mobile menu toggle
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+
+        // Handle direct navigation via URL hash
+        function handleHashChange() {
+            const hash = window.location.hash;
+            const chapterId = parseInt(hash.replace('#chapter', '')) || 1;
+            loadChapter(chapterId);
+        }
+
+        window.addEventListener('hashchange', handleHashChange);
+
+        // Initial load
+        generateChapterList();
+        handleHashChange();
     </script>
 </body>
 </html>
