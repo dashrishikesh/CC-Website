@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Book Reader</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --bg-color: #f8fafc;
+            --text-color: #1e293b;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .book-input {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        .file-input-wrapper {
+            margin-bottom: 1.5rem;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .custom-file-upload {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .custom-file-upload:hover {
+            background-color: #1d4ed8;
+        }
+
+        #preview {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        #preview img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .control-btn {
+            padding: 0.75rem;
+            border-radius: 50%;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            transition: transform 0.2s;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Online Book Reader</h1>
+            <p>Upload your book in Markdown format (.md) to start reading</p>
+        </header>
+
+        <div class="book-input">
+            <div class="file-input-wrapper">
+                <label for="fileInput" class="custom-file-upload">
+                    Choose File
+                </label>
+                <input type="file" id="fileInput" accept=".md,.txt">
+            </div>
+            <div id="fileName"></div>
+        </div>
+
+        <div id="preview"></div>
+
+        <div class="controls">
+            <button class="control-btn" id="decreaseFont">-</button>
+            <button class="control-btn" id="increaseFont">+</button>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const preview = document.getElementById('preview');
+        const fileName = document.getElementById('fileName');
+        const increaseFont = document.getElementById('increaseFont');
+        const decreaseFont = document.getElementById('decreaseFont');
+        
+        let fontSize = 16;
+
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            fileName.textContent = `Selected file: ${file.name}`;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                // Convert markdown to HTML using marked library
+                const htmlContent = marked.parse(content);
+                preview.innerHTML = htmlContent;
+            };
+            reader.readAsText(file);
+        });
+
+        increaseFont.addEventListener('click', () => {
+            if (fontSize < 24) {
+                fontSize += 2;
+                preview.style.fontSize = `${fontSize}px`;
+            }
+        });
+
+        decreaseFont.addEventListener('click', () => {
+            if (fontSize > 12) {
+                fontSize -= 2;
+                preview.style.fontSize = `${fontSize}px`;
+            }
+        });
+    </script>
+</body>
+</html>
